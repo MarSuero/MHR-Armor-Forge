@@ -5,6 +5,7 @@
 PCL2 风格 UI - 稳定版
 """
 
+import json
 import ctypes
 import os
 import re
@@ -535,29 +536,16 @@ class PCL2ModTool:
         self.save_path = None
         self.current_page = None
 
-        # PCL2 颜色
-        self.colors = {
-            'bg': '#FFFFFF',
-            'sidebar': '#F0F0F0',
-            'sidebar_hover': '#E5F1FB',
-            'sidebar_active': '#D4E8F7',
-            'accent': '#1E88E5',
-            'accent_dark': '#1565C0',
-            'accent_light': '#64B5F6',
-            'text': '#212121',
-            'text_secondary': '#616161',
-            'text_disabled': '#9E9E9E',
-            'border': '#E0E0E0',
-            'border_light': '#EEEEEE',
-            'border_accent': '#BBDEFB',  # 浅蓝色边框，圆角卡片用
-            'card': '#FAFAFA',
-            'card_hover': '#F5F5F5',
-            'success': '#43A047',
-            'warning': '#FB8C00',
-            'error': '#E53935',
-            'primary_btn': '#1E88E5',
-            'primary_btn_hover': '#1976D2',
-        }
+        # 主题配置
+        self.themes = self._get_theme_definitions()
+        self.config_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "config.json"
+        )
+        self.current_theme = self._load_theme()
+
+        # PCL2 颜色（应用当前主题）
+        self.colors = self.themes.get(self.current_theme, self.themes["默认蓝"]).copy()
+        self.root.configure(bg=self.colors['bg'])
 
         self.setup_ui()
         self.load_builtin_equipment()
@@ -622,7 +610,7 @@ class PCL2ModTool:
                 bg=self.colors['sidebar'],
                 fg=self.colors['accent']).pack(anchor='w')
 
-        tk.Label(bottom_frame, text="v1.3",
+        tk.Label(bottom_frame, text="v1.4",
                 font=('Microsoft YaHei', 9),
                 bg=self.colors['sidebar'],
                 fg=self.colors['text_secondary']).pack(anchor='w', pady=(2, 0))
@@ -638,6 +626,182 @@ class PCL2ModTool:
         self.log_page = self.create_log_page()
 
         self.show_import_page()
+
+    # ============================================================
+    # 主题管理
+    # ============================================================
+    def _get_theme_definitions(self):
+        """定义所有主题配色方案"""
+        return {
+            "默认蓝": {
+                'bg': '#FFFFFF',
+                'sidebar': '#F0F0F0',
+                'sidebar_hover': '#E5F1FB',
+                'sidebar_active': '#D4E8F7',
+                'accent': '#1E88E5',
+                'accent_dark': '#1565C0',
+                'accent_light': '#64B5F6',
+                'text': '#212121',
+                'text_secondary': '#616161',
+                'text_disabled': '#9E9E9E',
+                'border': '#E0E0E0',
+                'border_light': '#EEEEEE',
+                'border_accent': '#BBDEFB',
+                'card': '#FAFAFA',
+                'card_hover': '#F5F5F5',
+                'success': '#43A047',
+                'warning': '#FB8C00',
+                'error': '#E53935',
+                'primary_btn': '#1E88E5',
+                'primary_btn_hover': '#1976D2',
+            },
+            "深邃黑": {
+                'bg': '#1E1E1E',
+                'sidebar': '#252526',
+                'sidebar_hover': '#2A2D2E',
+                'sidebar_active': '#37373D',
+                'accent': '#007ACC',
+                'accent_dark': '#005F9E',
+                'accent_light': '#4FC3F7',
+                'text': '#E0E0E0',
+                'text_secondary': '#A0A0A0',
+                'text_disabled': '#6E6E6E',
+                'border': '#3E3E42',
+                'border_light': '#464649',
+                'border_accent': '#007ACC',
+                'card': '#252526',
+                'card_hover': '#2A2D2E',
+                'success': '#4CAF50',
+                'warning': '#FF9800',
+                'error': '#F44336',
+                'primary_btn': '#007ACC',
+                'primary_btn_hover': '#005F9E',
+            },
+            "护眼绿": {
+                'bg': '#F5F5DC',
+                'sidebar': '#E8E4C9',
+                'sidebar_hover': '#D6D2B0',
+                'sidebar_active': '#C8C49D',
+                'accent': '#2E7D32',
+                'accent_dark': '#1B5E20',
+                'accent_light': '#66BB6A',
+                'text': '#2C3E2C',
+                'text_secondary': '#5C6B5C',
+                'text_disabled': '#8C9B8C',
+                'border': '#D0CDB0',
+                'border_light': '#E0DDC5',
+                'border_accent': '#81C784',
+                'card': '#FBF8E8',
+                'card_hover': '#F5F2DA',
+                'success': '#388E3C',
+                'warning': '#F57C00',
+                'error': '#D32F2F',
+                'primary_btn': '#2E7D32',
+                'primary_btn_hover': '#1B5E20',
+            },
+            "樱花粉": {
+                'bg': '#FFF0F5',
+                'sidebar': '#FCE4EC',
+                'sidebar_hover': '#F8BBD9',
+                'sidebar_active': '#F48FB1',
+                'accent': '#C2185B',
+                'accent_dark': '#880E4F',
+                'accent_light': '#F06292',
+                'text': '#3E2723',
+                'text_secondary': '#5D4037',
+                'text_disabled': '#8D6E63',
+                'border': '#F8BBD0',
+                'border_light': '#FCE4EC',
+                'border_accent': '#F48FB1',
+                'card': '#FFF5F8',
+                'card_hover': '#FFEBF0',
+                'success': '#43A047',
+                'warning': '#FF9800',
+                'error': '#E53935',
+                'primary_btn': '#C2185B',
+                'primary_btn_hover': '#880E4F',
+            },
+            "日落橙": {
+                'bg': '#FFF3E0',
+                'sidebar': '#FFE0B2',
+                'sidebar_hover': '#FFCC80',
+                'sidebar_active': '#FFB74D',
+                'accent': '#E65100',
+                'accent_dark': '#BF360C',
+                'accent_light': '#FF9800',
+                'text': '#3E2723',
+                'text_secondary': '#5D4037',
+                'text_disabled': '#8D6E63',
+                'border': '#FFCC80',
+                'border_light': '#FFE0B2',
+                'border_accent': '#FFB74D',
+                'card': '#FFF8E1',
+                'card_hover': '#FFF0CC',
+                'success': '#43A047',
+                'warning': '#F57C00',
+                'error': '#E53935',
+                'primary_btn': '#E65100',
+                'primary_btn_hover': '#BF360C',
+            },
+            "暗夜紫": {
+                'bg': '#1A1025',
+                'sidebar': '#22142E',
+                'sidebar_hover': '#2D1B3D',
+                'sidebar_active': '#3D2549',
+                'accent': '#7B1FA2',
+                'accent_dark': '#4A148C',
+                'accent_light': '#CE93D8',
+                'text': '#E1E1E1',
+                'text_secondary': '#B0B0B0',
+                'text_disabled': '#808080',
+                'border': '#3D2549',
+                'border_light': '#4A2E5A',
+                'border_accent': '#7B1FA2',
+                'card': '#22142E',
+                'card_hover': '#2D1B3D',
+                'success': '#66BB6A',
+                'warning': '#FFA726',
+                'error': '#EF5350',
+                'primary_btn': '#7B1FA2',
+                'primary_btn_hover': '#4A148C',
+            },
+        }
+
+    def _load_theme(self):
+        """加载保存的主题配置"""
+        default_theme = "默认蓝"
+        try:
+            if os.path.exists(self.config_file):
+                with open(self.config_file, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+                    theme_name = config.get("theme", default_theme)
+                    if theme_name in self.themes:
+                        return theme_name
+        except Exception:
+            pass
+        return default_theme
+
+    def _save_theme(self, theme_name):
+        """保存主题配置到文件"""
+        try:
+            config = {}
+            if os.path.exists(self.config_file):
+                with open(self.config_file, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+            config["theme"] = theme_name
+            with open(self.config_file, "w", encoding="utf-8") as f:
+                json.dump(config, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception as e:
+            self.log_msg(f"❌ 保存主题配置失败: {e}")
+            return False
+
+    def _apply_theme_colors(self):
+        """应用当前主题颜色到 self.colors"""
+        if self.current_theme in self.themes:
+            self.colors = self.themes[self.current_theme].copy()
+        else:
+            self.colors = self.themes["默认蓝"].copy()
 
     def create_nav_button(self, parent, text, command):
         """创建 PCL2 风格导航按钮"""
@@ -1733,10 +1897,10 @@ class PCL2ModTool:
             self.log_msg(f"⚠️ 打开文件夹失败: {e}")
 
     # ============================================================
-    # 设置页面
+    # 设置页面（含主题颜色）
     # ============================================================
     def create_settings_page(self):
-        """创建设置页面"""
+        """创建设置页面 - 包含主题颜色选择"""
         page = tk.Frame(self.main_content, bg=self.colors['bg'])
         page.pack_propagate(False)
 
@@ -1749,11 +1913,142 @@ class PCL2ModTool:
                 bg=self.colors['bg'],
                 fg=self.colors['text']).pack(anchor='w')
 
-        # 设置内容
-        content = tk.Frame(page, bg=self.colors['bg'])
-        content.pack(fill='both', expand=True, padx=30, pady=20)
+        # 内容容器（带滚动条）
+        content_outer = tk.Frame(page, bg=self.colors['bg'])
+        content_outer.pack(fill='both', expand=True, padx=30, pady=20)
 
-        # 通用设置卡片
+        canvas = tk.Canvas(content_outer, bg=self.colors['bg'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(content_outer, orient='vertical', command=canvas.yview)
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        scrollbar.pack(side='right', fill='y')
+        canvas.pack(side='left', fill='both', expand=True)
+
+        content = tk.Frame(canvas, bg=self.colors['bg'])
+        content_window = canvas.create_window((0, 0), window=content, anchor='nw')
+
+        def update_scrollregion(_event=None):
+            canvas.configure(scrollregion=canvas.bbox('all'))
+
+        def resize_content(event=None):
+            canvas_width = event.width
+            canvas.itemconfig(content_window, width=canvas_width)
+
+        content.bind('<Configure>', update_scrollregion)
+        canvas.bind('<Configure>', resize_content)
+
+        # 鼠标滚轮支持
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+            return 'break'
+
+        def bind_mousewheel(widget):
+            widget.bind('<MouseWheel>', on_mousewheel)
+            for child in widget.winfo_children():
+                bind_mousewheel(child)
+
+        canvas.bind('<MouseWheel>', on_mousewheel)
+
+        # ---------- 主题设置卡片 ----------
+        theme_card = tk.Frame(content, bg=self.colors['card'],
+                             highlightbackground=self.colors['border_light'],
+                             highlightthickness=1)
+        theme_card.pack(fill='x', pady=(0, 20))
+
+        theme_inner = tk.Frame(theme_card, bg=self.colors['card'])
+        theme_inner.pack(fill='x', padx=20, pady=20)
+
+        tk.Label(theme_inner, text="🎨  主题颜色",
+                font=('Microsoft YaHei', 14, 'bold'),
+                bg=self.colors['card'],
+                fg=self.colors['text']).pack(anchor='w', pady=(0, 12))
+
+        tk.Label(theme_inner, text="选择你喜欢的主题风格，重启程序后生效",
+                font=('Microsoft YaHei', 10),
+                bg=self.colors['card'],
+                fg=self.colors['text_secondary']).pack(anchor='w', pady=(0, 12))
+
+        # 主题选择行
+        theme_select_frame = tk.Frame(theme_inner, bg=self.colors['card'])
+        theme_select_frame.pack(fill='x', pady=(0, 12))
+
+        tk.Label(theme_select_frame, text="当前主题:",
+                font=('Microsoft YaHei', 11),
+                bg=self.colors['card'],
+                fg=self.colors['text']).pack(side='left', padx=(0, 10))
+
+        self.theme_var = tk.StringVar(value=self.current_theme)
+        theme_combo = ttk.Combobox(theme_select_frame,
+                                  textvariable=self.theme_var,
+                                  state="readonly",
+                                  values=list(self.themes.keys()),
+                                  width=15,
+                                  font=('Microsoft YaHei', 10))
+        theme_combo.pack(side='left')
+
+        # 主题预览画布
+        preview_frame = tk.Frame(theme_inner, bg=self.colors['card'])
+        preview_frame.pack(fill='x', pady=(8, 0))
+
+        self.theme_preview_canvas = tk.Canvas(
+            preview_frame, height=60, bg=self.colors['card'],
+            highlightthickness=0
+        )
+        self.theme_preview_canvas.pack(fill='x')
+
+        def draw_theme_preview(*args):
+            """绘制主题预览色块"""
+            self.theme_preview_canvas.delete("all")
+            theme_name = self.theme_var.get()
+            if theme_name not in self.themes:
+                return
+            theme = self.themes[theme_name]
+            w = self.theme_preview_canvas.winfo_width()
+            if w < 2:
+                w = 400
+            colors_to_show = [
+                ("主背景", theme.get('bg', '#FFF')),
+                ("侧边栏", theme.get('sidebar', '#F0F0F0')),
+                ("强调色", theme.get('accent', '#1E88E5')),
+                ("卡片", theme.get('card', '#FAFAFA')),
+                ("文字", theme.get('text', '#212121')),
+                ("成功", theme.get('success', '#43A047')),
+                ("警告", theme.get('warning', '#FB8C00')),
+                ("错误", theme.get('error', '#E53935')),
+            ]
+            block_w = min(80, (w - 20) // len(colors_to_show))
+            gap = 8
+            start_x = (w - (block_w * len(colors_to_show) + gap * (len(colors_to_show) - 1))) // 2
+            for i, (label, color) in enumerate(colors_to_show):
+                x = start_x + i * (block_w + gap)
+                # 色块
+                self.theme_preview_canvas.create_rectangle(
+                    x, 0, x + block_w, 40, fill=color, outline=""
+                )
+                # 标签
+                self.theme_preview_canvas.create_text(
+                    x + block_w // 2, 52, text=label,
+                    font=('Microsoft YaHei', 8),
+                    fill=self.colors['text_secondary']
+                )
+
+        # 绑定更新事件
+        self.theme_var.trace_add('write', draw_theme_preview)
+        self.theme_preview_canvas.bind('<Configure>', draw_theme_preview)
+
+        # 应用主题按钮
+        btn_apply_theme = tk.Button(theme_inner, text="保存主题",
+                                   font=('Microsoft YaHei', 11, 'bold'),
+                                   bg=self.colors['primary_btn'],
+                                   fg='white',
+                                   activebackground=self.colors['primary_btn_hover'],
+                                   activeforeground='white',
+                                   bd=0, padx=20, pady=6,
+                                   cursor='hand2',
+                                   command=self.apply_theme)
+        btn_apply_theme.pack(anchor='w')
+
+        # ---------- 通用设置卡片 ----------
         card = tk.Frame(content, bg=self.colors['card'],
                        highlightbackground=self.colors['border_light'],
                        highlightthickness=1)
@@ -1792,7 +2087,6 @@ class PCL2ModTool:
                                   font=('Microsoft YaHei', 10))
         scale_combo.pack(side='left')
 
-        # 应用按钮
         def apply_scale():
             new_scale = self.scale_var.get()
             messagebox.showinfo("提示",
@@ -1830,7 +2124,6 @@ class PCL2ModTool:
         backup_dir_frame.pack(fill='x', pady=(0, 8))
 
         self.backup_dir_var = tk.StringVar()
-        # 默认使用项目目录下的 save_backups
         default_backup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "save_backups")
         self.backup_dir_var.set(default_backup_dir)
 
@@ -1924,7 +2217,31 @@ class PCL2ModTool:
                 bg=self.colors['card'],
                 fg=self.colors['text_secondary']).pack(anchor='w')
 
+        # 绑定鼠标滚轮到所有内容子控件
+        bind_mousewheel(content)
+
+        # 初始更新滚动区域
+        page.after(100, update_scrollregion)
+
         return page
+
+    def apply_theme(self):
+        """应用选中的主题"""
+        theme_name = self.theme_var.get()
+        if theme_name == self.current_theme:
+            messagebox.showinfo("提示", f"当前已经是「{theme_name}」主题")
+            return
+        if theme_name not in self.themes:
+            messagebox.showerror("错误", f"未知主题: {theme_name}")
+            return
+
+        if self._save_theme(theme_name):
+            self.log_msg(f"✓ 主题已保存: {theme_name}")
+            if messagebox.askyesno("重启确认",
+                f"主题已保存为「{theme_name}」\n\n需要重启程序才能生效。\n是否立即退出？"):
+                self.root.destroy()
+        else:
+            messagebox.showerror("错误", "保存主题配置失败，请检查文件权限")
 
     # ============================================================
     # 日志页面

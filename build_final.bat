@@ -25,7 +25,7 @@ if exist "dist" rmdir /s /q "dist"
 if exist "build" rmdir /s /q "build"
 if exist "MHR_Armor_Bone_Renamer.spec" del "MHR_Armor_Bone_Renamer.spec"
 if exist "MHR_Mod_Tool_v1.2.spec" del "MHR_Mod_Tool_v1.2.spec"
-if exist "MHR_Mod_Tool_v1.3.spec" del "MHR_Mod_Tool_v1.3.spec"
+if exist "MHR_Mod_Tool_v1.4.spec" del "MHR_Mod_Tool_v1.4.spec"
 echo   Done
 echo.
 
@@ -34,7 +34,7 @@ echo [3/4] Installing dependencies...
 echo.
 
 echo [4/4] Building EXE (this may take 1-3 minutes)...
-%PYTHON_EXE% -m PyInstaller --onefile --windowed --name "MHR_Mod_Tool_v1.3" --hidden-import=py7zr --hidden-import=py7zr.cli --hidden-import=rarfile --hidden-import=tkinterdnd2 --hidden-import=openpyxl --hidden-import=pybcj --collect-all=py7zr --collect-all=rarfile --collect-all=tkinterdnd2 --collect-all=pybcj --clean --noconfirm MHR_Armor_Bone_Renamer.py
+%PYTHON_EXE% -m PyInstaller --onefile --windowed --name "MHR_Mod_Tool_v1.4" --hidden-import=py7zr --hidden-import=py7zr.cli --hidden-import=rarfile --hidden-import=tkinterdnd2 --hidden-import=openpyxl --hidden-import=pybcj --collect-all=py7zr --collect-all=rarfile --collect-all=tkinterdnd2 --collect-all=pybcj --clean --noconfirm MHR_Armor_Bone_Renamer.py
 
 if errorlevel 1 (
     echo.
@@ -50,6 +50,6 @@ echo ============================================
 echo   BUILD SUCCESS!
 echo ============================================
 echo.
-echo Output: %~dp0dist\MHR_Mod_Tool_v1.3.exe
+echo Output: %~dp0dist\MHR_Mod_Tool_v1.4.exe
 echo.
 pause
